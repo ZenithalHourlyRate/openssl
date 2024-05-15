@@ -200,6 +200,9 @@ jobs:
     - name: get cpu info
       run: cat /proc/cpuinfo
 
+    - name: get openssl cpu info
+      run: QEMU_LD_PREFIX=/usr/${{ matrix.platform.arch }} util/wrap.pl apps/openssl info -cpusettings
+
     - name: make all tests
       if: github.event_name == 'push' && matrix.platform.tests == ''
       run: |
