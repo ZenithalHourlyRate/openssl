@@ -102,116 +102,201 @@ ossl_hwsm3_block_data_order_zvksh_zvl512:
 L_sm3_loop_zvl512:
     # Use indexed loads (ORDER_BY_RVV512_DATA) to load two blocks in the
     # word order expected by the later vrgather/vsm3c stages.
+    # Let B0 = {w15, w14, ..., w1, w0}
+    # B1 = {w15', w14', ..., w1', w0'}
+    # V0 := {w7', ..., w0', w7, ..., w0}
+    # V1 := {w15', ..., w8', w15, ..., w8}
     @{[vluxei32_v $V0, $INPUT, $V30]}
     @{[vluxei32_v $V1, $INPUT, $V31]}
+
+    # Message Expansions
+    # V9 := {0, 0, w7', ..., w2', 0, 0, w7, ..., w2}
     @{[vrgather_vv $V9, $V0, $V29]}
+    # V10 := {0, 0, 0, 0, w7', ..., w4', 0, 0, 0, 0, w7, ..., w4}
     @{[vrgather_vv $V10, $V9, $V29]}
+    # V11 := {w11', ..., w8', 0, 0, 0, 0, w11, ..., w8, 0, 0, 0, 0}
     @{[vrgather_vv $V11, $V1, $V28]}
+    # V10 := {w11', ..., w4', w11, ..., w4}
     @{[vor_vv $V10, $V10, $V11]}
+    # V11 := {0, 0, w11', ..., w6', 0, 0, w11, ..., w6}
     @{[vrgather_vv $V11, $V10, $V29]}
+    # V12 := {0, 0, w15', ..., w10', 0, 0, w15, ..., w10}
     @{[vrgather_vv $V12, $V1, $V29]}
+    # V13 := {0, 0, 0, 0, w15', ..., w12', 0, 0, 0, 0, w15, ..., w12}
     @{[vrgather_vv $V13, $V12, $V29]}
+    # V2 := {w23', ..., w16', w23, ..., w16}
     @{[vsm3me_vv $V2, $V1, $V0]}
+
+    # V14 := {w19', ..., w16', 0, 0, 0, 0, w19, ..., w16, 0, 0, 0, 0}
     @{[vrgather_vv $V14, $V2, $V28]}
+    # V13 := {w19', ..., w12', w19, ..., w12}
     @{[vor_vv $V13, $V13, $V14]}
+    # V14 := {0, 0, w19', ..., w14', 0, 0, w19, ..., w14}
     @{[vrgather_vv $V14, $V13, $V29]}
+    # V15 := {0, 0, w23', ..., w18', 0, 0, w23, ..., w18}
     @{[vrgather_vv $V15, $V2, $V29]}
+    # V16 := {0, 0, 0, 0, w23', ..., w20', 0, 0, 0, 0, w23, ..., w20}
     @{[vrgather_vv $V16, $V15, $V29]}
+    # V3 := {w31', ..., w24', w31, ..., w24}
     @{[vsm3me_vv $V3, $V2, $V1]}
+
+    # V17 := {w27', ..., w24', 0, 0, 0, 0, w27, ..., w24, 0, 0, 0, 0}
     @{[vrgather_vv $V17, $V3, $V28]}
+    # V16 := {w27', ..., w20', w27, ..., w20}
     @{[vor_vv $V16, $V16, $V17]}
+    # V17 := {0, 0, w27', ..., w22', 0, 0, w27, ..., w22}
     @{[vrgather_vv $V17, $V16, $V29]}
+    # V18 := {0, 0, w31', ..., w26', 0, 0, w31, ..., w26}
     @{[vrgather_vv $V18, $V3, $V29]}
+    # V19 := {0, 0, 0, 0, w31', ..., w28', 0, 0, 0, 0, w31, ..., w28}
     @{[vrgather_vv $V19, $V18, $V29]}
+    # V4 := {w39', ..., w32', w39, ..., w32}
     @{[vsm3me_vv $V4, $V3, $V2]}
+
+    # V20 := {w35', ..., w32', 0, 0, 0, 0, w35, ..., w32, 0, 0, 0, 0}
     @{[vrgather_vv $V20, $V4, $V28]}
+    # V19 := {w35', ..., w28', w35, ..., w28}
     @{[vor_vv $V19, $V19, $V20]}
+    # V20 := {0, 0, w35', ..., w30', 0, 0, w35, ..., w30}
     @{[vrgather_vv $V20, $V19, $V29]}
+    # V21 := {0, 0, w39', ..., w34', 0, 0, w39, ..., w34}
     @{[vrgather_vv $V21, $V4, $V29]}
+    # V22 := {0, 0, 0, 0, w39', ..., w34', 0, 0, w39, ..., w34}
     @{[vrgather_vv $V22, $V21, $V29]}
+    # V5 := {w47', ..., w40', w47, ..., w40}
     @{[vsm3me_vv $V5, $V4, $V3]}
+
+    # V23 := {w43', ..., w40', 0, 0, 0, 0, w43, ..., w40, 0, 0, 0, 0}
     @{[vrgather_vv $V23, $V5, $V28]}
+    # V22 := {w43', ..., w34', w43, ..., w34}
     @{[vor_vv $V22, $V22, $V23]}
+    # V23 := {0, 0, w43', ..., w38', 0, 0, w43, ..., w38}
     @{[vrgather_vv $V23, $V22, $V29]}
+    # V24 := {0, 0, w47', ..., w42', 0, 0, w47, ..., w42}
     @{[vrgather_vv $V24, $V5, $V29]}
+    # V25 := {0, 0, 0, 0, w47', ..., w44', 0, 0, 0, 0, w47, ..., w44}
     @{[vrgather_vv $V25, $V24, $V29]}
+    # V6 := {w55', ..., w48', w55, ..., w48}
     @{[vsm3me_vv $V6, $V5, $V4]}
+
+    # V27 := {w51', ..., w48', 0, 0, 0, 0, w51, ..., w48, 0, 0, 0, 0}
     @{[vrgather_vv $V27, $V6, $V28]}
+    # V25 := {w51', ..., w44', w51, ..., w44}
     @{[vor_vv $V25, $V25, $V27]}
+    # V7 := {w63', ..., w56', w63, ..., w56}
     @{[vsm3me_vv $V7, $V6, $V5]}
+    # V8 := {w71', ..., w64', w71, ..., w64}
     @{[vsm3me_vv $V8, $V7, $V6]}
+    # V27 := {H, G, F, E, D, C, B, A}, the state
     @{[vmv_v_v $V27, $V26]}
+
+    # Starts compression for the first block
     @{[vsetivli "zero", 8, "e32", "m1", "tu", "mu"]}
     @{[vsm3c_vi $V26, $V0, 0]}
     @{[vsm3c_vi $V26, $V9, 1]}
     @{[vsm3c_vi $V26, $V10, 2]}
     @{[vsm3c_vi $V26, $V11, 3]}
+
     @{[vsm3c_vi $V26, $V1, 4]}
     @{[vsm3c_vi $V26, $V12, 5]}
     @{[vsm3c_vi $V26, $V13, 6]}
     @{[vsm3c_vi $V26, $V14, 7]}
+
     @{[vsm3c_vi $V26, $V2, 8]}
     @{[vsm3c_vi $V26, $V15, 9]}
     @{[vsm3c_vi $V26, $V16, 10]}
     @{[vsm3c_vi $V26, $V17, 11]}
+
     @{[vsm3c_vi $V26, $V3, 12]}
     @{[vsm3c_vi $V26, $V18, 13]}
     @{[vsm3c_vi $V26, $V19, 14]}
     @{[vsm3c_vi $V26, $V20, 15]}
+
     @{[vsm3c_vi $V26, $V4, 16]}
     @{[vsm3c_vi $V26, $V21, 17]}
     @{[vsm3c_vi $V26, $V22, 18]}
     @{[vsm3c_vi $V26, $V23, 19]}
+
     @{[vsm3c_vi $V26, $V5, 20]}
     @{[vsm3c_vi $V26, $V24, 21]}
     @{[vsm3c_vi $V26, $V25, 22]}
+
+    # V9 := {0, 0, w51, ..., w46} # Second block in tail is undisturbed
     @{[vrgather_vv $V9, $V25, $V29]}
+    # V10 := {0, 0, w55, ..., w50}
     @{[vrgather_vv $V10, $V6, $V29]}
+    # V11 := {0, 0, 0, 0, w55, ..., w52}
     @{[vrgather_vv $V11, $V10, $V29]}
+    # V12 := {w59, ..., w56, 0, 0, 0, 0}
     @{[vrgather_vv $V12, $V7, $V28]}
+    # V11 := {w59, ..., w52}
     @{[vor_vv $V11, $V11, $V12]}
+    # V12 := {0, 0, w59, ..., w54}
     @{[vrgather_vv $V12, $V11, $V29]}
+    # V13 := {0, 0, w63, ..., w58}
     @{[vrgather_vv $V13, $V7, $V29]}
+    # V14 := {0, 0, w63, ..., w60}
     @{[vrgather_vv $V14, $V13, $V29]}
+    # V15 := {w67, ..., w64, 0, 0, 0, 0}
     @{[vrgather_vv $V15, $V8, $V28]}
+    # V14 := {w67, ..., w60}
     @{[vor_vv $V14, $V14, $V15]}
+    # V15 := {0, 0, w67, ..., w62}
     @{[vrgather_vv $V15, $V14, $V29]}
+
     @{[vsm3c_vi $V26, $V9, 23]}
+
     @{[vsm3c_vi $V26, $V6, 24]}
     @{[vsm3c_vi $V26, $V10, 25]}
     @{[vsm3c_vi $V26, $V11, 26]}
     @{[vsm3c_vi $V26, $V12, 27]}
+
     @{[vsm3c_vi $V26, $V7, 28]}
     @{[vsm3c_vi $V26, $V13, 29]}
     @{[vsm3c_vi $V26, $V14, 30]}
     @{[vsm3c_vi $V26, $V15, 31]}
+    # Finish compression for the first block
+
     @{[vsetivli "zero", 16, "e32", "m1", "ta", "ma"]}
+    # Update state
+    # V26 := {H, G, F, E, D, C, B, A}, the new state
     @{[vxor_vv $V26, $V26, $V27]}
+    # V27 := {H, G, F, E, D, C, B, A, X, X, X, X, X, X, X, X}
     @{[vslideup_vi $V27, $V26, 8]}
+    # V26 := V27, the new state in high 8 words
     @{[vmv_v_v $V26, $V27]}
+
+    # Start compression for the second block
     @{[vsm3c_vi $V26, $V0, 0]}
     @{[vsm3c_vi $V26, $V9, 1]}
     @{[vsm3c_vi $V26, $V10, 2]}
     @{[vsm3c_vi $V26, $V11, 3]}
+
     @{[vsm3c_vi $V26, $V1, 4]}
     @{[vsm3c_vi $V26, $V12, 5]}
     @{[vsm3c_vi $V26, $V13, 6]}
     @{[vsm3c_vi $V26, $V14, 7]}
+
     @{[vsm3c_vi $V26, $V2, 8]}
     @{[vsm3c_vi $V26, $V15, 9]}
     @{[vsm3c_vi $V26, $V16, 10]}
     @{[vsm3c_vi $V26, $V17, 11]}
+
     @{[vsm3c_vi $V26, $V3, 12]}
     @{[vsm3c_vi $V26, $V18, 13]}
     @{[vsm3c_vi $V26, $V19, 14]}
     @{[vsm3c_vi $V26, $V20, 15]}
+
     @{[vsm3c_vi $V26, $V4, 16]}
     @{[vsm3c_vi $V26, $V21, 17]}
     @{[vsm3c_vi $V26, $V22, 18]}
     @{[vsm3c_vi $V26, $V23, 19]}
+
     @{[vsm3c_vi $V26, $V5, 20]}
     @{[vsm3c_vi $V26, $V24, 21]}
     @{[vsm3c_vi $V26, $V25, 22]}
+
+    # Similar comments as in the compress for the first block
     @{[vrgather_vv $V9, $V25, $V29]}
     @{[vrgather_vv $V10, $V6, $V29]}
     @{[vrgather_vv $V11, $V10, $V29]}
@@ -224,17 +309,23 @@ L_sm3_loop_zvl512:
     @{[vor_vv $V14, $V14, $V15]}
     @{[vrgather_vv $V15, $V14, $V29]}
     @{[vsm3c_vi $V26, $V9, 23]}
+
     @{[vsm3c_vi $V26, $V6, 24]}
     @{[vsm3c_vi $V26, $V10, 25]}
     @{[vsm3c_vi $V26, $V11, 26]}
     @{[vsm3c_vi $V26, $V12, 27]}
+
     @{[vsm3c_vi $V26, $V7, 28]}
     @{[vsm3c_vi $V26, $V13, 29]}
     @{[vsm3c_vi $V26, $V14, 30]}
     @{[vsm3c_vi $V26, $V15, 31]}
+
+    # Update state in high 8 words
     @{[vxor_vv $V26, $V26, $V27]}
+    # Put state in low 8 words
     @{[vslidedown_vi $V27, $V26, 8]}
     @{[vmv_v_v $V26, $V27]}
+
     addi $EVENNUM , $EVENNUM , -1
     addi $INPUT, $INPUT, 128
     bnez $EVENNUM , L_sm3_loop_zvl512
@@ -392,6 +483,9 @@ L_sm3_end:
 
 .size ossl_hwsm3_block_data_order_zvksh,.-ossl_hwsm3_block_data_order_zvksh
 
+# Offsets for two blocks, each block with 16 word (32 bit long)
+# Put the first 8 words of both block to the first register
+# Put the second 8 words of both blocks to the second register
 .section .rodata
 .p2align 3
 .type ORDER_BY_ZVL512_DATA,\@object
@@ -399,6 +493,9 @@ ORDER_BY_ZVL512_DATA:
     .word 0, 4, 8, 12, 16, 20, 24, 28, 64, 68, 72, 76, 80, 84, 88, 92, 32, 36, 40, 44, 48, 52, 56, 60, 96, 100, 104, 108, 112, 116, 120, 124
 .size ORDER_BY_ZVL512_DATA, .-ORDER_BY_ZVL512_DATA
 
+# Indices for shifting used by vrgather
+# Shift right (big endian) by 2 for each 8 words in the first register
+# Shift left (big endian) by 4 for each 8 words in the second register
 .p2align 3
 .type ORDER_BY_ZVL512_EXP,\@object
 ORDER_BY_ZVL512_EXP:
